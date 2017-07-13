@@ -16,8 +16,9 @@ import java.net.InetSocketAddress;
 public class WebSocketTorrentStreamService extends WebSocketServer {
 
     private final Torrent torrent;
+    private final int ChunkSize = 2000;
+
     private InputStream videoStream;
-    private int offset = 0;
 
     public WebSocketTorrentStreamService(
             int port,
@@ -35,7 +36,7 @@ public class WebSocketTorrentStreamService extends WebSocketServer {
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        byte[] buffer = new byte[2000];
+        byte[] buffer = new byte[ChunkSize];
 
         if(videoStream == null) {
             conn.close();
