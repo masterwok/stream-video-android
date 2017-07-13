@@ -1,9 +1,5 @@
 package com.masterwok.stream_video_android.services;
 
-import android.util.Log;
-
-import com.github.se_bastiaan.torrentstream.Torrent;
-
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -18,8 +14,9 @@ public class WebSocketStreamService extends WebSocketServer {
 
     private InputStream inputStream;
 
-    public WebSocketStreamService( int port, InputStream stream) {
+    public WebSocketStreamService( int port, InputStream inputStream) {
         super(new InetSocketAddress(port));
+        this.inputStream = inputStream;
     }
 
     @Override
