@@ -8,42 +8,30 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 
-public class WebSocketTorrentStreamService extends WebSocketServer {
+public class WebSocketStreamService extends WebSocketServer {
 
-    private final Torrent torrent;
     private final int ChunkSize = 2000;
 
-    private InputStream videoStream;
+    private InputStream inputStream;
 
-    public WebSocketTorrentStreamService(
-            int port,
-            Torrent torrent) {
+    public WebSocketStreamService( int port, InputStream stream) {
         super(new InetSocketAddress(port));
-
-        this.torrent = torrent;
-
-        try {
-            videoStream = torrent.getVideoStream();
-        } catch(Exception ex) {
-            Log.d("WebSocketServer", ex.toString());
-        }
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         byte[] buffer = new byte[ChunkSize];
 
-        if(videoStream == null) {
+        if(inputStream == null) {
             conn.close();
         }
 
         try {
-            int count = videoStream.read(buffer);
+            int count = inputStream.read(buffer);
 
             if(count > 0) {
                 conn.send(buffer);
