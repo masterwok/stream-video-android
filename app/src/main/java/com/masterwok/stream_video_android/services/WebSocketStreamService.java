@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 
 public class WebSocketStreamService extends WebSocketServer {
 
-    private final int ChunkSize = 2000;
+    public static final short ChunkSize = 2000;
 
     private InputStream inputStream;
 
@@ -28,9 +28,7 @@ public class WebSocketStreamService extends WebSocketServer {
         }
 
         try {
-            int count = inputStream.read(buffer);
-
-            if(count > 0) {
+            while(inputStream.read(buffer) != -1) {
                 conn.send(buffer);
             }
 
@@ -38,7 +36,6 @@ public class WebSocketStreamService extends WebSocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override

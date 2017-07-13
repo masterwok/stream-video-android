@@ -6,7 +6,9 @@ import android.os.HandlerThread;
 import com.github.se_bastiaan.torrentstream.StreamStatus;
 import com.github.se_bastiaan.torrentstream.Torrent;
 import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
-import com.masterwok.stream_video_android.utils.TorrentStreamWebSocketRunner;
+import com.masterwok.stream_video_android.utils.InputStreamWebSocketRunner;
+
+import java.io.FileNotFoundException;
 
 
 public class TorrentStreamListener implements TorrentListener {
@@ -23,8 +25,13 @@ public class TorrentStreamListener implements TorrentListener {
         webSocketThread = new HandlerThread("WebSocketThread");
         webSocketThread.start();
 
-        new Handler(webSocketThread.getLooper())
-                .post(new TorrentStreamWebSocketRunner(torrent));
+        try {
+            new Handler(webSocketThread.getLooper()).post(
+                    new InputStreamWebSocketRunner(torrent.getVideoStream())
+            );
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
