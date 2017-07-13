@@ -11,7 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import com.masterwok.stream_video_android.contracts.StreamFactory;
 import com.masterwok.stream_video_android.utils.InputStreamWebSocketRunner;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
