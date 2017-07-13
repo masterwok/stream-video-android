@@ -1,5 +1,7 @@
 package com.masterwok.stream_video_android.services;
 
+import com.masterwok.stream_video_android.contracts.StreamFactory;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -11,24 +13,24 @@ import java.net.InetSocketAddress;
 public class WebSocketStreamService extends WebSocketServer {
 
     public static final short ChunkSize = 2000;
+    private final StreamFactory streamFactory;
 
-    private InputStream inputStream;
-
-    public WebSocketStreamService( int port, InputStream inputStream) {
+    public WebSocketStreamService(int port, StreamFactory streamFactory) {
         super(new InetSocketAddress(port));
-        this.inputStream = inputStream;
+        this.streamFactory = streamFactory;
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        InputStream inputStream = streamFactory.getStream();
         byte[] buffer = new byte[ChunkSize];
 
-        if(inputStream == null) {
+        if (inputStream == null) {
             conn.close();
         }
 
         try {
-            while(inputStream.read(buffer) != -1) {
+            while (inputStream.read(buffer) != -1) {
                 conn.send(buffer);
             }
 
