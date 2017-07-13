@@ -1,5 +1,7 @@
 package com.masterwok.stream_video_android.services;
 
+import android.util.Log;
+
 import com.github.se_bastiaan.torrentstream.Torrent;
 
 import org.java_websocket.WebSocket;
@@ -11,39 +13,46 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 
-public class WebSocketStreamService extends WebSocketServer {
+public class WebSocketTorrentStreamService extends WebSocketServer {
 
     private final Torrent torrent;
+    private InputStream videoStream;
     private int offset = 0;
 
-    public WebSocketStreamService(
+    public WebSocketTorrentStreamService(
             int port,
             Torrent torrent) {
         super(new InetSocketAddress(port));
 
         this.torrent = torrent;
+
+        try {
+            videoStream = torrent.getVideoStream();
+        } catch(Exception ex) {
+            Log.d("WebSocketServer", ex.toString());
+        }
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        byte[] chunk = new byte[2000000];
+        byte[] buffer = new byte[2000];
+
+        if(videoStream == null) {
+            conn.close();
+        }
 
         try {
+            int count = videoStream.read(buffer);
 
-            InputStream stream = torrent.getVideoStream();
-
-            int read = stream.read(chunk);
-
-            if(read > 0) {
-                conn.send(chunk);
-                offset += chunk.length;
+            if(count > 0) {
+                conn.send(buffer);
             }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            conn.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     @Override

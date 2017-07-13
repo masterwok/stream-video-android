@@ -5,6 +5,7 @@ import android.os.Environment;
 import com.github.se_bastiaan.torrentstream.TorrentOptions;
 import com.github.se_bastiaan.torrentstream.TorrentStream;
 import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
+import com.masterwok.stream_video_android.listeners.TorrentStreamListener;
 
 public class TorrentStreamService {
 
@@ -19,7 +20,7 @@ public class TorrentStreamService {
     private TorrentStreamService() {
     }
 
-    public void startStream(String url, TorrentListener torrentListener) {
+    public void startStream(String url) {
         torrentStream = TorrentStream.init(
                 new TorrentOptions.Builder()
                         .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
@@ -27,10 +28,7 @@ public class TorrentStreamService {
                         .build()
         );
 
-        if(torrentListener != null) {
-            torrentStream.addListener(torrentListener);
-        }
-
+        torrentStream.addListener(new TorrentStreamListener());
         torrentStream.startStream(url);
     }
 
