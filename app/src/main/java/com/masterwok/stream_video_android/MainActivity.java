@@ -27,19 +27,24 @@ public class MainActivity extends AppCompatActivity {
                 .getInstance()
                 .startStream(streamUrl);
 
-//        HandlerThread webSocketThread = new HandlerThread("WebSocketThread");
-//        webSocketThread.start();
-//
-//        StreamFactory streamFactory = new StreamFactory() {
-//            @Override
-//            public InputStream getStream() {
-//                return getResources().openRawResource(R.raw.small);
-//            }
-//        };
-//
-//        new Handler(webSocketThread.getLooper()).post(
-//                new InputStreamWebSocketRunner(streamFactory)
-//        );
+//        createTestFileStream();
+    }
+
+
+    private void createTestFileStream() {
+        HandlerThread webSocketThread = new HandlerThread("WebSocketThread");
+        webSocketThread.start();
+
+        StreamFactory streamFactory = new StreamFactory() {
+            @Override
+            public InputStream getStream() {
+                return getResources().openRawResource(R.raw.small);
+            }
+        };
+
+        new Handler(webSocketThread.getLooper()).post(
+                new InputStreamWebSocketRunner(streamFactory)
+        );
     }
 
     @Override
