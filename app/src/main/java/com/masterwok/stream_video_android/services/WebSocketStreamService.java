@@ -12,7 +12,7 @@ import java.net.InetSocketAddress;
 
 public class WebSocketStreamService extends WebSocketServer {
 
-    public static final short ChunkSize = 2000;
+    public static final int ChunkSize = 2000000;
     private final StreamFactory streamFactory;
 
     public WebSocketStreamService(int port, StreamFactory streamFactory) {
