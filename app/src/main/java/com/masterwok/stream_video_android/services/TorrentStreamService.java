@@ -8,20 +8,17 @@ import com.github.se_bastiaan.torrentstream.Torrent;
 import com.github.se_bastiaan.torrentstream.TorrentOptions;
 import com.github.se_bastiaan.torrentstream.TorrentStream;
 import com.masterwok.stream_video_android.Constants.Config;
-import com.masterwok.stream_video_android.contracts.StreamFactory;
+import com.masterwok.stream_video_android.factories.TorrentStreamFactory;
 import com.masterwok.stream_video_android.listeners.TorrentStreamListener;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
 
 public class TorrentStreamService {
 
     private static final TorrentStreamService instance = new TorrentStreamService();
 
-    private Torrent currentTorrent;
     private TorrentStream torrentStream;
+    private Torrent currentTorrent;
 
     public static TorrentStreamService getInstance() {
         return instance;
@@ -54,44 +51,13 @@ public class TorrentStreamService {
             @Override
             public void onStreamError(Torrent torrent, Exception e) {
                 super.onStreamError(torrent, e);
-
-                if (currentTorrent != null) {
-                    currentTorrent = null;
-                }
+                currentTorrent = null;
             }
         });
 
         torrentStream.startStream(url);
     }
 
-    private StreamFactory createMediaStreamFactory() {
-        return new StreamFactory() {
-            @Override
-            public InputStream getStream() {
-                InputStream stream = null;
-
-                try {
-                    stream = currentTorrent.getVideoStream();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                return stream;
-            }
-
-            @Override
-            public long getLength() {
-                return currentTorrent.getVideoFile().length();
-            }
-
-            @Override
-            public String getContentType() {
-                return URLConnection.guessContentTypeFromName(
-                        currentTorrent.getVideoFile().getName()
-                );
-            }
-        };
-    }
 
     private void startHttpServer() {
         HandlerThread httpServerThread = new HandlerThread("HttpServerThread");
@@ -105,7 +71,7 @@ public class TorrentStreamService {
                             new HttpServer(
                                     Config.HttpServerPort,
                                     Config.ChunkSize,
-                                    createMediaStreamFactory()
+                                    new TorrentStreamFactory(currentTorrent)
                             ).start();
                         } catch (IOException e) {
                             e.printStackTrace();

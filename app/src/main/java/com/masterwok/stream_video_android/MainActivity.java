@@ -20,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
         TorrentStreamService
                 .getInstance()
                 .startStream(streamUrl);
-
     }
 
     @Override
