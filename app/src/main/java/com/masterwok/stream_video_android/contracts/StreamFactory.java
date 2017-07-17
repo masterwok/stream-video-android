@@ -4,4 +4,8 @@ import java.io.InputStream;
 
 public interface StreamFactory {
     InputStream getStream();
+
+    long getLength();
+
+    String getContentType();
 }

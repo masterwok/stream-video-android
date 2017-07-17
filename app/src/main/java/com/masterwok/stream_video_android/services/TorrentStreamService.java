@@ -7,12 +7,14 @@ import android.os.HandlerThread;
 import com.github.se_bastiaan.torrentstream.Torrent;
 import com.github.se_bastiaan.torrentstream.TorrentOptions;
 import com.github.se_bastiaan.torrentstream.TorrentStream;
+import com.masterwok.stream_video_android.Constants.Config;
 import com.masterwok.stream_video_android.contracts.StreamFactory;
 import com.masterwok.stream_video_android.listeners.TorrentStreamListener;
-import com.masterwok.stream_video_android.utils.InputStreamWebSocketRunner;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 
 public class TorrentStreamService {
 
@@ -23,10 +25,6 @@ public class TorrentStreamService {
 
     public static TorrentStreamService getInstance() {
         return instance;
-    }
-
-    public Torrent getCurrentTorrent() {
-        return currentTorrent;
     }
 
     private TorrentStreamService() {
@@ -70,10 +68,11 @@ public class TorrentStreamService {
         HandlerThread webSocketThread = new HandlerThread("WebSocketThread");
         webSocketThread.start();
 
-        StreamFactory streamFactory = new StreamFactory() {
+        final StreamFactory streamFactory = new StreamFactory() {
             @Override
             public InputStream getStream() {
                 InputStream stream = null;
+
 
                 try {
                     stream = currentTorrent.getVideoStream();
@@ -83,10 +82,35 @@ public class TorrentStreamService {
 
                 return stream;
             }
+
+            @Override
+            public long getLength() {
+                return currentTorrent.getVideoFile().length();
+            }
+
+            @Override
+            public String getContentType() {
+                return URLConnection.guessContentTypeFromName(
+                        currentTorrent.getVideoFile().getName()
+                );
+            }
         };
 
         new Handler(webSocketThread.getLooper()).post(
-                new InputStreamWebSocketRunner(streamFactory)
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            new HttpServer(
+                                    Config.HttpServerPort,
+                                    Config.ChunkSize,
+                                    streamFactory
+                            ).start();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
         );
     }
 }
