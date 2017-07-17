@@ -67,8 +67,14 @@ public class TorrentStreamService implements ITorrentStreamService {
     }
 
     public void stopStream() {
-        torrentStream.stopStream();
-        httpStreamService.stop();
+        if(torrentStream != null) {
+            torrentStream.stopStream();
+        }
+
+        if(httpStreamService != null) {
+            httpStreamService.stop();
+        }
+
         currentTorrent = null;
     }
 

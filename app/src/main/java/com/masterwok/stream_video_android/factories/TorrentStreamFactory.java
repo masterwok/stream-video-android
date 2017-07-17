@@ -1,13 +1,13 @@
 package com.masterwok.stream_video_android.factories;
 
 import com.github.se_bastiaan.torrentstream.Torrent;
-import com.masterwok.stream_video_android.contracts.StreamFactory;
+import com.masterwok.stream_video_android.contracts.IStreamFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URLConnection;
 
-public class TorrentStreamFactory implements StreamFactory {
+public class TorrentStreamFactory implements IStreamFactory {
 
     private Torrent torrent;
 

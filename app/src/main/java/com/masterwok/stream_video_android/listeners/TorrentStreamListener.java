@@ -5,7 +5,7 @@ import com.github.se_bastiaan.torrentstream.Torrent;
 import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
 
 
-public class TorrentStreamListener implements TorrentListener {
+public abstract class TorrentStreamListener implements TorrentListener {
 
     @Override
     public void onStreamPrepared(Torrent torrent) {
