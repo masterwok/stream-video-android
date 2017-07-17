@@ -10,12 +10,12 @@ import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
 
 
-public class HttpServer extends NanoHTTPD {
+public class HttpStreamService extends NanoHTTPD {
 
     private int chunkSize;
     private final StreamFactory streamFactory;
 
-    public HttpServer(
+    public HttpStreamService(
             int port,
             int chunkSize,
             StreamFactory streamFactory

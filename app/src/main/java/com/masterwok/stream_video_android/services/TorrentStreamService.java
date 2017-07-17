@@ -1,41 +1,51 @@
 package com.masterwok.stream_video_android.services;
 
-import android.os.Environment;
-import android.os.Handler;
-import android.os.HandlerThread;
 
 import com.github.se_bastiaan.torrentstream.Torrent;
 import com.github.se_bastiaan.torrentstream.TorrentOptions;
 import com.github.se_bastiaan.torrentstream.TorrentStream;
 import com.masterwok.stream_video_android.Constants.Config;
+import com.masterwok.stream_video_android.contracts.ITorrentStreamService;
 import com.masterwok.stream_video_android.factories.TorrentStreamFactory;
 import com.masterwok.stream_video_android.listeners.TorrentStreamListener;
 
+import java.io.File;
 import java.io.IOException;
 
-public class TorrentStreamService {
+import fi.iki.elonen.NanoHTTPD;
 
-    private static final TorrentStreamService instance = new TorrentStreamService();
+public class TorrentStreamService implements ITorrentStreamService {
+
+    private static final ITorrentStreamService instance = new TorrentStreamService();
 
     private TorrentStream torrentStream;
     private Torrent currentTorrent;
+    private NanoHTTPD httpStreamService;
 
-    public static TorrentStreamService getInstance() {
+    public static ITorrentStreamService getInstance() {
         return instance;
     }
 
     private TorrentStreamService() {
     }
 
-    public void startStream(String url) {
+    public void startStream(
+            String url,
+            File saveLocation
+    ) {
         torrentStream = TorrentStream.init(
                 new TorrentOptions.Builder()
-                        .saveLocation(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS))
+                        .saveLocation(saveLocation)
                         .removeFilesAfterStop(true)
                         .build()
         );
 
-        torrentStream.addListener(new TorrentStreamListener() {
+        torrentStream.addListener(createTorrentStreamListener());
+        torrentStream.startStream(url);
+    }
+
+    private TorrentStreamListener createTorrentStreamListener() {
+        return new TorrentStreamListener() {
             @Override
             public void onStreamStarted(Torrent torrent) {
                 super.onStreamStarted(torrent);
@@ -51,33 +61,29 @@ public class TorrentStreamService {
             @Override
             public void onStreamError(Torrent torrent, Exception e) {
                 super.onStreamError(torrent, e);
-                currentTorrent = null;
+                stopStream();
             }
-        });
-
-        torrentStream.startStream(url);
+        };
     }
 
+    public void stopStream() {
+        torrentStream.stopStream();
+        httpStreamService.stop();
+        currentTorrent = null;
+    }
 
     private void startHttpServer() {
-        HandlerThread httpServerThread = new HandlerThread("HttpServerThread");
-        httpServerThread.start();
-
-        new Handler(httpServerThread.getLooper()).post(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            new HttpServer(
-                                    Config.HttpServerPort,
-                                    Config.ChunkSize,
-                                    new TorrentStreamFactory(currentTorrent)
-                            ).start();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
+        httpStreamService = new HttpStreamService(
+                Config.HttpServerPort,
+                Config.ChunkSize,
+                new TorrentStreamFactory(currentTorrent)
         );
+
+        try {
+            httpStreamService.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 }
