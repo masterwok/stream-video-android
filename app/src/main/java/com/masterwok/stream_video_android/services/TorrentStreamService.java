@@ -48,14 +48,14 @@ public class TorrentStreamService {
             @Override
             public void onStreamReady(Torrent torrent) {
                 super.onStreamReady(torrent);
-                startWebSocketStream();
+                startHttpServer();
             }
 
             @Override
             public void onStreamError(Torrent torrent, Exception e) {
                 super.onStreamError(torrent, e);
 
-                if(currentTorrent != null) {
+                if (currentTorrent != null) {
                     currentTorrent = null;
                 }
             }
@@ -64,15 +64,11 @@ public class TorrentStreamService {
         torrentStream.startStream(url);
     }
 
-    private void startWebSocketStream() {
-        HandlerThread webSocketThread = new HandlerThread("WebSocketThread");
-        webSocketThread.start();
-
-        final StreamFactory streamFactory = new StreamFactory() {
+    private StreamFactory createMediaStreamFactory() {
+        return new StreamFactory() {
             @Override
             public InputStream getStream() {
                 InputStream stream = null;
-
 
                 try {
                     stream = currentTorrent.getVideoStream();
@@ -95,8 +91,13 @@ public class TorrentStreamService {
                 );
             }
         };
+    }
 
-        new Handler(webSocketThread.getLooper()).post(
+    private void startHttpServer() {
+        HandlerThread httpServerThread = new HandlerThread("HttpServerThread");
+        httpServerThread.start();
+
+        new Handler(httpServerThread.getLooper()).post(
                 new Runnable() {
                     @Override
                     public void run() {
@@ -104,7 +105,7 @@ public class TorrentStreamService {
                             new HttpServer(
                                     Config.HttpServerPort,
                                     Config.ChunkSize,
-                                    streamFactory
+                                    createMediaStreamFactory()
                             ).start();
                         } catch (IOException e) {
                             e.printStackTrace();
